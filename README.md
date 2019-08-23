@@ -20,9 +20,13 @@ Then type 'nodemon index' to run the project
 To view the resources use Postman or any other API tester with the link
 
 http://localhost:6060/ ------> Public Home Page
+
 http://localhost:6060/movies -------> Public Movies List Page
+
 http://localhost:6060/movies/cast/1 -------> Private Movies Cast Page
+
 http://localhost:6060/movies/addmovies ----------> Private Add Movies Page
+
 http://localhost:6060/movies/login --------->Public Login Page
 
 
