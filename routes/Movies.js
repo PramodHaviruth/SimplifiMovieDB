@@ -1,28 +1,41 @@
 const express = require("express");
 const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const passport = require("passport"),
   LocalStrategy = require("passport-local").Strategy;
 const router = express.Router();
 
 const db = require("../config/db.js");
 
-router.use(express.urlencoded());
+router.use(cookieParser("SimplifiCommerce"));
+
+router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
 
-router.use(session({ secret: "SimplifiCommerce" }));
+router.use(
+  session({
+    secret: "SimplifiCommerce",
+    resave: false,
+    saveUninitialized: false
+  })
+);
 
 router.use(passport.initialize());
 router.use(passport.session());
 
-passport.serializeUser(function(user, done) {
-  console.log("this is serialize name = " + user[0].ID);
-  done(null, user);
+router.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Credentials", true);
+  next();
 });
 
-passport.deserializeUser(function(user, done) {
-  console.log("this is deserialize name = " + user[0].ID);
+router.use((req, res, next) => {
+  console.log("Log session =====");
+  console.log(req.session);
 
-  done(null, user);
+  next();
 });
 
 passport.use(
@@ -40,23 +53,30 @@ passport.use(
       })
       .catch(err => {
         console.log(err);
-        return done(err);
+        return done({ Retcode: 1 });
       });
   })
 );
 
 function protected(req, res, next) {
-  if (!req.user) {
-    return res.redirect("/");
+  console.log(req.session);
+  if (req.user !== 1) {
+    return res.send({ Retcode: 1 });
   }
   return next();
 }
 
-router.get("/", (req, res) => {
-  res.send("Public Home Page");
+passport.serializeUser(function(user, done) {
+  console.log("this is serialize name = " + user);
+  done(null, user);
 });
 
-router.get("/movies", (req, res) => {
+passport.deserializeUser(function(user, done) {
+  console.log("this is deserialize name = " + user);
+
+  done(null, user);
+});
+router.get("/", (req, res) => {
   db.getMovieDetails
     .then(result => {
       console.log(result);
@@ -67,10 +87,10 @@ router.get("/movies", (req, res) => {
     });
 });
 
-router.get("/movies/cast/:id", protected, (req, res, next) => {
+router.get("/cast/:id", (req, res, next) => {
   db.getMovieCastDetails(req.params.id)
     .then(result => {
-      console.log(result);
+      console.log("inside cast details0" + result);
       res.send(JSON.stringify(result));
     })
     .catch(err => {
@@ -78,30 +98,22 @@ router.get("/movies/cast/:id", protected, (req, res, next) => {
     });
 });
 
-router.post("/movies/addmovies", protected, (req, res, next) => {
+router.post("/addmovies", (req, res, next) => {
   db.setMovieDetails(req.body)
     .then(result => {
       console.log(result);
-      res.send("Success");
+      res.send({ Retcode: 0 });
     })
     .catch(err => {
       console.log(err);
     });
 });
 
-router.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/home",
-    failureRedirect: "/movies/login"
-  }),
-  (req, res) => {
-    res.send("login");
+router.post("/login", passport.authenticate("local"), (req, res) => {
+  if (!req.user) {
+    return res.send({ Retcode: 1 });
   }
-);
-
-router.get("/home", (req, res) => {
-  res.send("Successful login");
+  res.send({ Retcode: 0, UserId: req.user });
 });
 
 module.exports = router;
