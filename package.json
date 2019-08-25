@@ -4,15 +4,20 @@
   "description": "Simplifi Movie Databse project for interview",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon index",
+    "test": "mocha"
   },
   "author": "Pramod Haviruth",
   "license": "ISC",
   "dependencies": {
+    "chai": "^4.2.0",
+    "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
     "express-session": "^1.16.2",
+    "mocha": "^6.2.0",
     "mssql": "^5.1.0",
     "passport": "^0.4.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "request": "^2.88.0"
   }
 }

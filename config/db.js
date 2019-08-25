@@ -42,15 +42,12 @@ const getMovieCastDetails = function(movieId) {
   return new Promise((resolve, reject) => {
     initDB
       .then(req => {
-        req.query(
-          `select Cast from Movie where ID = ${movieId}`,
-          (err, res) => {
-            if (err) throw err;
-            else {
-              resolve(res.recordset);
-            }
+        req.query(`select * from Movie where ID = ${movieId}`, (err, res) => {
+          if (err) throw err;
+          else {
+            resolve(res.recordset);
           }
-        );
+        });
       })
       .catch(err => {
         console.log(err);
@@ -63,10 +60,11 @@ const setMovieDetails = function(movieInfoParams) {
   return new Promise((resolve, reject) => {
     initDB
       .then(req => {
+        console.log(movieInfoParams.Name);
         req.query(
           `insert into Movie values('${movieInfoParams.Name}',
              ${movieInfoParams.Year}, ${movieInfoParams.Rating}, 
-             ${movieInfoParams.Poster}, '${movieInfoParams.Cast}')`,
+             '${movieInfoParams.Poster}', '${movieInfoParams.Cast}')`,
           (err, res) => {
             if (err) {
               console.log(err);
@@ -93,8 +91,12 @@ const validateUserDetails = function(userName, password) {
           (err, res) => {
             if (err) throw err;
             else {
-              console.log("res.recordset is =" + res.recordset.ID);
-              resolve(res.recordset);
+              if (res.recordset.length > 0) {
+                if (res.recordset[0].ID) resolve(res.recordset[0].ID);
+                else reject(-999);
+              } else {
+                reject(-999);
+              }
             }
           }
         );
